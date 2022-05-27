@@ -127,7 +127,7 @@ class PhotosTableViewCell: UITableViewCell {
         ])
     }
 
-    func itemSize(for width: CGFloat, with spacing: CGFloat) -> CGSize { // размеры ячейки
+    func itemSize(for width: CGFloat, with spacing: CGFloat) -> CGSize { 
         let needWidth = width - 4 * spacing
         let itemWidth = floor(needWidth / Constant.itemCount)
 
