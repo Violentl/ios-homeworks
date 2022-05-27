@@ -104,7 +104,7 @@ final class PostTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func prepareForReuse() { 
+    override func prepareForReuse() {
         super.prepareForReuse()
         self.authorLabel.text = nil
         self.postImageView.image = nil
@@ -193,7 +193,8 @@ final class PostTableViewCell: UITableViewCell {
 
 extension PostTableViewCell: Setupable {
 
-    func setup(with viewModel: ViewModelProtocol) { 
+    func setup(with viewModel: ViewModelProtocol) {
+        
         guard let viewModel = viewModel as? ViewModel else { return }
 
         self.authorLabel.text = viewModel.author
