@@ -1,16 +1,17 @@
 //
 //  ViewController.swift
-//  Navigation
+//  Netology_IB_Instruments
 //
-//  Created by User on 24.05.2022.
+//  Created by User on 06.04.2022.
 //
 
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         // Do any additional setup after loading the view.
     }
 
