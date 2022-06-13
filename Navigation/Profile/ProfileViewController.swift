@@ -9,7 +9,7 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
 
-    private lazy var tableView: UITableView = {
+    lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero)
         tableView.backgroundColor = .systemGray6
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +49,6 @@ final class ProfileViewController: UIViewController {
         self.tableView.tableHeaderView = tableHeaderView
         self.setupNavigationBar()
         self.setupView()
-//        tapGesture()
         setupProfileHeaderView()
     }
 
@@ -162,20 +161,5 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
 }
 
 
-extension ProfileViewController: ProfileHeaderViewProtocol {
 
-    func didTapStatusButton(textFieldIsVisible: Bool, completion: @escaping () -> Void) {
-        self.heightConstraint?.constant = textFieldIsVisible ? 250 : 220
-
-        tableView.beginUpdates()
-        tableView.reloadSections(IndexSet(0..<1), with: .automatic)
-        tableView.endUpdates()
-
-        UIView.animate(withDuration: 0.3, delay: 0.0) {
-            self.view.layoutIfNeeded()
-        } completion: { _ in
-            completion()
-        }
-    }
-}
 
