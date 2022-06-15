@@ -7,127 +7,128 @@
 
 import UIKit
 
-final class GesturesViewController: UIViewController {
-
-    private lazy var imageView: UIImageView = {
+class GesturesViewController: UIViewController {
+    
+    
+    private lazy var avatarImage: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MyPhoto"))
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.borderWidth = 3.0
-        imageView.layer.masksToBounds = false
         imageView.layer.borderColor = UIColor.white.cgColor
         imageView.layer.cornerRadius = 70
-        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-        imageView.isUserInteractionEnabled = true
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        
         return imageView
     }()
-
-    private lazy var mySecondView: UIView = {
-        let view = UIView()
-        view.isHidden = true
-        view.alpha = 0
-        view.backgroundColor = .black
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-
-    private lazy var myButton: UIButton = {
+    
+    private var widthAvatarImage: NSLayoutConstraint?
+    private var heightAvatarImage: NSLayoutConstraint?
+    private var positionXAvatarImage: NSLayoutConstraint?
+    private var positionYAvatarImage: NSLayoutConstraint?
+    
+    private lazy var transitionButton: UIButton = {
         let button = UIButton()
-        let image = UIImage(systemName: "multiply.square")
+        let image = UIImage(named: "cancel")
         button.setBackgroundImage(image, for: .normal)
-        button.isHidden = true
-        button.alpha = 0
+        button.addTarget(self, action: #selector(clickButton), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0.0
+        
         return button
     }()
-
-    private let tapGestureRecognizer = UITapGestureRecognizer()
-
-    private var topImageConstraint: NSLayoutConstraint?
-    private var leftImageConstraint: NSLayoutConstraint?
-    private var widthImageConstraint: NSLayoutConstraint?
-    private var heightImageConstraint: NSLayoutConstraint?
-
-    private var isExpanded = false
-
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupView()
-        self.setupGesture()
+        self.view.backgroundColor = .black.withAlphaComponent(0.0)
+        setupSubView()
     }
-
-    private func setupView() {
-        self.view.backgroundColor = .white
-        self.view.addSubview(self.imageView)
-        self.view.addSubview(self.mySecondView)
-        self.view.addSubview(self.myButton)
-
-        self.topImageConstraint = self.imageView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 50)
-        self.leftImageConstraint = self.imageView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 16)
-        self.heightImageConstraint = self.imageView.heightAnchor.constraint(equalToConstant: 140)
-        self.widthImageConstraint = self.imageView.widthAnchor.constraint(equalToConstant: 140)
-
-        let centerXViewConstraint = self.mySecondView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor)
-        let centerYViewConstraint = self.mySecondView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
-        let widthViewConstraint = self.mySecondView.widthAnchor.constraint(equalToConstant: 250)
-        let heightViewConstraint = self.mySecondView.heightAnchor.constraint(equalToConstant: 250)
-
-        let topButtonConstraint = self.myButton.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 50)
-        let rightButtonConstraint = self.myButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
-        let heightButtonConstraint = self.myButton.heightAnchor.constraint(equalToConstant: 50)
-        let widthButtonConstraint = self.myButton.widthAnchor.constraint(equalToConstant: 50)
-
-        NSLayoutConstraint.activate([ self.topImageConstraint, self.leftImageConstraint,  self.heightImageConstraint, self.widthImageConstraint, centerXViewConstraint, centerYViewConstraint,  widthViewConstraint, heightViewConstraint, topButtonConstraint,  rightButtonConstraint, heightButtonConstraint, widthButtonConstraint].compactMap({ $0 }))
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        moveIn()
     }
-
-    private func setupGesture() {
-        self.tapGestureRecognizer.addTarget(self, action: #selector(self.handleTapGesture(_:)))
-        self.imageView.addGestureRecognizer(self.tapGestureRecognizer)
-        myButton.addTarget(self, action: #selector(self.didTapButton), for: .touchUpInside)
-    }
-
-    @objc private func handleTapGesture(_ gestureRecognizer: UITapGestureRecognizer) {
-        guard self.tapGestureRecognizer === gestureRecognizer else { return }
-        self.mySecondView.isHidden = false
-        self.myButton.isHidden = false
-        self.isExpanded.toggle()
-        self.heightImageConstraint?.constant = self.isExpanded ? self.view.bounds.height : 140
-        self.widthImageConstraint?.constant = self.isExpanded ? self.view.bounds.width : 140
-        NSLayoutConstraint.deactivate([ self.topImageConstraint, self.leftImageConstraint
+    
+    
+    private func setupSubView() {
+        self.view.addSubview(avatarImage)
+        self.view.addSubview(transitionButton)
+        
+        self.widthAvatarImage = self.avatarImage.widthAnchor.constraint(equalToConstant: 138)
+        self.heightAvatarImage = self.avatarImage.heightAnchor.constraint(equalToConstant: 138)
+        self.positionXAvatarImage = self.avatarImage.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 16)
+        self.positionYAvatarImage = self.avatarImage.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
+        
+        NSLayoutConstraint.activate([
+            self.transitionButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            self.transitionButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -16),
+            self.transitionButton.heightAnchor.constraint(equalToConstant: 40),
+            self.transitionButton.widthAnchor.constraint(equalToConstant: 40),
+            
+            self.widthAvatarImage, self.heightAvatarImage,
+            self.positionXAvatarImage, self.positionYAvatarImage
         ].compactMap( {$0} ))
-
-        UIView.animate(withDuration: 0.5) {
-            self.mySecondView.alpha = self.isExpanded ? 0.5 : 0
+    }
+    
+    private func moveIn() {
+        NSLayoutConstraint.deactivate([
+            self.positionXAvatarImage, self.positionYAvatarImage,
+            self.widthAvatarImage, self.heightAvatarImage
+        ].compactMap( {$0} ))
+        
+        self.widthAvatarImage = self.avatarImage.widthAnchor.constraint(equalTo: self.view.widthAnchor)
+        self.heightAvatarImage = self.avatarImage.heightAnchor.constraint(equalTo: self.view.widthAnchor)
+        self.positionXAvatarImage = self.avatarImage.centerXAnchor.constraint(equalTo: self.view.centerXAnchor)
+        self.positionYAvatarImage = self.avatarImage.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
+        
+        NSLayoutConstraint.activate([
+            self.positionXAvatarImage, self.positionYAvatarImage,
+            self.widthAvatarImage, self.heightAvatarImage
+        ].compactMap( {$0} ))
+        self.view.backgroundColor = .black.withAlphaComponent(0.8)
+        
+        UIView.animate(withDuration: 1, animations: {
+            self.avatarImage.layer.cornerRadius = self.view.frame.width / 2
             self.view.layoutIfNeeded()
-        } completion: { _ in
-        }
-
-        UIView.animate(withDuration: 0.3, delay: 0.5) {
-            self.myButton.alpha = self.isExpanded ? 1 : 0
-            self.view.layoutIfNeeded()
-
-        } completion: { _ in
+        }) { _ in
+            self.transitionButton.alpha = 1
+            self.avatarImage.layer.cornerRadius = 0.0
+            
+            UIView.animate(withDuration: 1) {
+                self.view.layoutIfNeeded()
+            }
         }
     }
-
-    @objc private func didTapButton() {
-        self.mySecondView.isHidden = false
-        self.myButton.isHidden = false
-        self.isExpanded.toggle()
-        self.heightImageConstraint?.constant = self.isExpanded ? self.view.bounds.height : 140
-        self.widthImageConstraint?.constant = self.isExpanded ? self.view.bounds.width : 140
-        NSLayoutConstraint.activate([ self.topImageConstraint, self.leftImageConstraint
+    
+    private func moveOut() {
+        self.avatarImage.layer.cornerRadius = self.view.frame.width / 2
+        NSLayoutConstraint.deactivate([
+            self.positionXAvatarImage, self.positionYAvatarImage,
+            self.widthAvatarImage, self.heightAvatarImage
         ].compactMap( {$0} ))
-        UIView.animate(withDuration: 0.5) {
-            self.mySecondView.alpha = self.isExpanded ? 0.5 : 0
+        
+        self.widthAvatarImage = self.avatarImage.widthAnchor.constraint(equalToConstant: 138)
+        self.heightAvatarImage = self.avatarImage.heightAnchor.constraint(equalToConstant: 138)
+        self.positionXAvatarImage = self.avatarImage.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 16)
+        self.positionYAvatarImage = self.avatarImage.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
+        
+        NSLayoutConstraint.activate([
+            self.positionXAvatarImage, self.positionYAvatarImage,
+            self.widthAvatarImage, self.heightAvatarImage
+        ].compactMap( {$0} ))
+        
+        self.view.backgroundColor = .black.withAlphaComponent(0.8)
+        self.transitionButton.alpha = 0.0
+        
+        UIView.animate(withDuration: 1, animations: {
+            self.avatarImage.layer.cornerRadius = 70.0
             self.view.layoutIfNeeded()
-        } completion: { _ in
+        }) { _ in
+            self.view.removeFromSuperview()
         }
-
-        UIView.animate(withDuration: 0.3, delay: 0.5) {
-            self.myButton.alpha = self.isExpanded ? 1 : 0
-            self.view.layoutIfNeeded()
-        } completion: { _ in
-        }
+    }
+    
+    @objc private func clickButton() {
+        moveOut()
     }
 }

@@ -17,6 +17,7 @@ final class ProfileViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DefaultCell")
         tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "PhotoCell")
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostCell")
+        tableView.register(ProfileHeaderView.self, forHeaderFooterViewReuseIdentifier: "TableHeader")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 300
 
@@ -38,15 +39,21 @@ final class ProfileViewController: UIViewController {
         self.setupNavigationBar()
         self.setupView()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.tabBar.isHidden = false
+        self.navigationController?.navigationBar.isHidden = true
+    }
 
     private func setupNavigationBar() {
-        self.tabBarController?.tabBar.isHidden = false
-        self.navigationController?.navigationBar.isHidden = false
+        self.tabBarController?.tabBar.isHidden = true
+        self.navigationController?.navigationBar.isHidden = true
     }
 
     private func setupView() {
         self.view.addSubview(self.tableView)
-        let topConstraint = self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor)
+        let topConstraint = self.tableView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor)
         let leadingConstraint = self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor)
         let trailingConstraint = self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         let bottomConstraint = self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
@@ -101,7 +108,10 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return ProfileHeaderView()
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableHeader") as! ProfileHeaderView
+        view.delegate = self
+        
+        return view
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -160,6 +170,30 @@ extension ProfileViewController: PostTableViewCellProtocol {
         let indexPath = IndexPath(row: index, section: 0)
         self.dataSource[indexPath.row - 1].likes += 1
         self.tableView.reloadRows(at: [indexPath], with: .fade)
+    }
+}
+
+extension ProfileViewController: ProfileHeaderViewProtocol {
+    
+    func buttonAction() {
+        self.tableView.beginUpdates()
+        self.tableView.endUpdates()
+       
+    }
+    
+    func delegateActionAnimatedAvatar(cell: ProfileHeaderView) {
+        let animatedAvatarViewController = GesturesViewController()
+        self.view.addSubview(animatedAvatarViewController.view)
+        self.addChild(animatedAvatarViewController)
+        animatedAvatarViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            animatedAvatarViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            animatedAvatarViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            animatedAvatarViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            animatedAvatarViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        animatedAvatarViewController.didMove(toParent: self)
     }
 }
 

@@ -7,147 +7,188 @@
 
 import UIKit
 
-class ProfileHeaderView: UIView, UITextFieldDelegate {
-    private lazy var imageView: UIImageView = {
+protocol ProfileHeaderViewProtocol: AnyObject {
+    func buttonAction()
+    
+    func delegateActionAnimatedAvatar(cell: ProfileHeaderView)
+}
+
+class ProfileHeaderView: UITableViewHeaderFooterView {
+    
+    
+    private var statusText: String?
+    
+    private lazy var mainStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        
+        return stackView
+    }()
+    
+    lazy var avatarImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MyPhoto"))
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.borderWidth = 3.0
         imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.layer.cornerRadius = 70
+        imageView.layer.cornerRadius = 70.0
         imageView.clipsToBounds = true
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        
         return imageView
     }()
-
+    
     private lazy var labelStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.distribution = .fillEqually
         stackView.spacing = 40
+        
         return stackView
     }()
-
-    private lazy var stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        return stackView
-    }()
-
+    
     private lazy var fullNameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Rinat Nasipov"
+        label.text  = "Rinat Nasipov"
         label.textColor = .black
-        label.font = UIFont(name: "Helvetica-Bold", size: 18)
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.boldSystemFont(ofSize: 18.0)
+        
         return label
     }()
-
+    
     private lazy var statusLabel: UILabel = {
         let label = UILabel()
         label.text = "Online"
         label.textColor = .gray
-        label.font = UIFont(name: "Helvetica-Regular", size: 14)
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 14.0)
+        
         return label
     }()
-
-    private lazy var textField: UITextField = {
+    
+    private lazy var statusTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите статус"
+        textField.translatesAutoresizingMaskIntoConstraints = false
         textField.backgroundColor = .white
-        textField.font = UIFont(name: "Helvetica-Regular", size: 15)
         textField.textColor = .black
-        textField.layer.cornerRadius = 12
-        textField.layer.borderWidth = 1
+        textField.font = UIFont.systemFont(ofSize: 15.0)
+        textField.layer.borderWidth = 1.0
         textField.layer.borderColor = UIColor.black.cgColor
-        textField.textAlignment = .center
-        textField.clearButtonMode = .whileEditing
-        textField.clearButtonMode = .unlessEditing
-        textField.clearButtonMode = .always
+        textField.layer.cornerRadius = 12.0
+        textField.placeholder = "Введите статус..."
         let leftView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 20.0, height: 2.0))
         textField.leftView = leftView
         textField.leftViewMode = .always
-        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.clipsToBounds = true
+        textField.delegate = self
+        
         return textField
     }()
-
-    private lazy var setStatusButton: UIButton = {
+    
+    private lazy var setStatusButton: UIButton = {  // КНОПКА
         let button = UIButton()
         button.setTitle("Set status", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 4
-        button.backgroundColor = .systemBlue
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOffset = CGSize(width: 4, height: 4)
-        button.layer.shadowRadius = 4
-        button.layer.shadowOpacity = 0.7
-        button.addTarget(self, action: #selector(self.didTapStatusButton), for: .touchUpInside)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 4
+        button.addTarget(self, action: #selector(buttonAction),
+                         for: .touchUpInside)
+        button.layer.shadowOffset = CGSize(width: 4.0, height: 4.0)
+        button.layer.shadowRadius = 4.0
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.7
+        button.layer.shouldRasterize = true
+        button.layer.shadowPath =  UIBezierPath(rect: button.bounds).cgPath
+        
         return button
     }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.backgroundColor = .systemGray6
-        self.drawSelf()
+    
+    weak var delegate: ProfileHeaderViewProtocol? // ДЕЛЕГАТ НАЖАТИЯ
+    
+    private var tapGestureRecognizer = UITapGestureRecognizer() // НАЖАТИЕ НА АВАТАР
+    
+    
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
+        self.createSubviews()
     }
-
-    required init?(coder aDecoder: NSCoder) {
+    
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    private func drawSelf() {
-        self.addSubview(stackView)
-        self.addSubview(textField)
-        self.addSubview(setStatusButton)
-        self.stackView.addArrangedSubview(imageView)
-        self.stackView.addArrangedSubview(labelStackView)
-        self.labelStackView.addArrangedSubview(fullNameLabel)
-        self.labelStackView.addArrangedSubview(statusLabel)
-        self.textField.delegate = self
-
-        let stackViewTopConstraint = self.stackView.topAnchor.constraint(equalTo: self.topAnchor)
-        let stackViewLeadingConstraint = self.stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
-        let stackViewTrailingConstraint = self.stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
-
-        let avatarImageViewWidthConstraint = self.imageView.widthAnchor.constraint(equalToConstant: 138)
-        let avatarImageViewHeightConstraint = self.imageView.heightAnchor.constraint(equalToConstant: 138)
-
-        let buttonTopConstraint = self.setStatusButton.topAnchor.constraint(equalTo: self.textField.bottomAnchor, constant: 16)
-        let buttonLeadingConstraint = self.setStatusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
-        let buttonTrailingConstraint = self.setStatusButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
-        let buttonHeightConstraint = self.setStatusButton.heightAnchor.constraint(equalToConstant: 50)
-        let buttonBottomConstraint = self.setStatusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16)
-
-        let topTextFieldConstraint = self.textField.topAnchor.constraint(equalTo: self.stackView.bottomAnchor, constant: -10)
-        let leadingTextFieldConstraint = self.textField.leadingAnchor.constraint(equalTo: self.labelStackView.leadingAnchor)
-        let heightTextFieldConstraint = self.textField.heightAnchor.constraint(equalToConstant: 40)
-        let trailingTextFieldConstraint = self.textField.trailingAnchor.constraint(equalTo: self.labelStackView.trailingAnchor)
-
-        NSLayoutConstraint.activate([ stackViewTopConstraint, stackViewLeadingConstraint, stackViewTrailingConstraint, avatarImageViewWidthConstraint, buttonTopConstraint, buttonLeadingConstraint, buttonTrailingConstraint, avatarImageViewHeightConstraint, buttonHeightConstraint, buttonBottomConstraint, topTextFieldConstraint, leadingTextFieldConstraint, heightTextFieldConstraint, trailingTextFieldConstraint
+    
+    
+    func createSubviews() {
+        self.addSubview(self.mainStackView)
+        self.mainStackView.addArrangedSubview(self.avatarImageView)
+        self.mainStackView.addArrangedSubview(self.labelStackView)
+        self.labelStackView.addArrangedSubview(self.fullNameLabel)
+        self.labelStackView.addArrangedSubview(self.statusLabel)
+        self.addSubview(self.statusTextField)
+        self.addSubview(self.setStatusButton)
+        self.setupConstraints()
+        self.setupTapGesture()
+    }
+    
+    func setupConstraints() {
+        NSLayoutConstraint.activate([
+            self.mainStackView.topAnchor.constraint(equalTo: self.topAnchor),
+            self.mainStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            self.mainStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            
+            self.avatarImageView.widthAnchor.constraint(equalToConstant: 138),
+            self.avatarImageView.heightAnchor.constraint(equalToConstant: 138),
+            
+            self.statusTextField.topAnchor.constraint(equalTo: self.mainStackView.bottomAnchor, constant: -10),
+            self.statusTextField.leadingAnchor.constraint(equalTo: self.labelStackView.leadingAnchor),
+            self.statusTextField.trailingAnchor.constraint(equalTo: self.labelStackView.trailingAnchor),
+            self.statusTextField.heightAnchor.constraint(equalToConstant: 40),
+            
+            self.setStatusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            self.setStatusButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            self.setStatusButton.heightAnchor.constraint(equalToConstant: 50),
+            self.setStatusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
+            self.setStatusButton.topAnchor.constraint(equalTo: self.statusTextField.bottomAnchor, constant: 16)
         ])
     }
+    
+    @objc func buttonAction() {
+        guard statusTextField.text != "" else {
+            statusTextField.vibrate()
+            return
+        }
+        statusText = self.statusTextField.text!
+        statusLabel.text = "\(statusText ?? "")"
+        self.statusTextField.text = nil
+        self.endEditing(true)
+    }
+}
 
-    private var statusText: String? = nil
 
+extension ProfileHeaderView: UITextFieldDelegate {
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.endEditing(true)
         return false
     }
+}
 
-    @objc private func didTapStatusButton() {
-        guard textField.text != "" else {
-            textField.vibrate()
-            return
-        }
-        statusText = textField.text!
-        statusLabel.text = "\(statusText ?? "")"
-        self.textField.text = nil
-        self.endEditing(true)
+extension ProfileHeaderView: UIGestureRecognizerDelegate {
+    
+    private func setupTapGesture() {
+        self.tapGestureRecognizer.addTarget(self, action: #selector(self.handleTapGesture(_:)))
+        self.avatarImageView.addGestureRecognizer(self.tapGestureRecognizer)
+        self.avatarImageView.isUserInteractionEnabled = true
+    }
+    
+    @objc func handleTapGesture(_ gestureRecognizer: UITapGestureRecognizer) {
+        guard self.tapGestureRecognizer === gestureRecognizer else { return }
+        delegate?.delegateActionAnimatedAvatar(cell: self)
     }
 }
+
 
 extension UIView {
     func vibrate() {

@@ -37,7 +37,9 @@ class InfoViewController: UIViewController {
 
     @objc private func didTapAlertButton() {
         let alert = UIAlertController (title: "Внимание!", message: "Вы уверены?", preferredStyle: .alert)
-        let yesButton = UIAlertAction (title: "Да", style: .default, handler: {action in print ("Да")})
+        let yesButton = UIAlertAction (title: "Да", style: .default, handler: {action in print ("Да")
+            self.dismiss(animated: true)
+        })
         let noButton = UIAlertAction (title: "Нет", style: .default, handler: {action in print ("Нет")})
         alert.addAction(yesButton)
         alert.addAction(noButton)
